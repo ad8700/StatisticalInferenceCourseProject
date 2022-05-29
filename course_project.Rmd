@@ -1,0 +1,117 @@
+---
+title: "Statistical Inference Course Project"
+output: html_notebook
+author: Andy Domenico
+---
+#Statistical Inference Course Project 
+The project consists of two parts:
+
+A simulation exercise.
+
+Basic inferential data analysis.
+
+##Simulation Exercise
+In this project we will investigate the exponential distribution in R and compare it with the Central Limit Theorem. The exponential distribution can be simulated in R with rexp(n, lambda) where lambda is the rate parameter. The mean of exponential distribution is 1/lambda and the standard deviation is also 1/lambda. We will set lambda = 0.2 for all of the simulations. We will investigate the distribution of averages of 40 exponentials. Note that we will need to do a thousand simulations.
+
+Illustrate via simulation and associated explanatory text the properties of the distribution of the mean of 40 exponentials. We will:
+
+1) Show the sample mean and compare it to the theoretical mean of the distribution.
+
+2) Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
+
+3) Show that the distribution is approximately normal.
+
+In point 3, we focus on the difference between the distribution of a large collection of random exponentials and the distribution of a large collection of averages of 40 exponentials.
+
+###Question 1
+In order to achieve this, start with creating 40 exponentials.  We will use a seed in order to make generation reproducible.  
+```{r}
+set.seed(420)
+lambda <- 0.2
+n <- 40
+sample_size <- 1000
+simulated_sample <- replicate(sample_size, rexp(n, lambda))
+means_exponentials <- apply(simulated_sample, 2, mean)
+```
+
+
+Now we want to compare the means in our simulated sample to the theoretical mean.  We get the theoretical mean by dividing 1 / lambda.
+
+```{r}
+sample_mean <- mean(means_exponentials)
+theoretical_mean <- 1 / lambda
+paste0("The sample mean is ", sample_mean, " and the theoretical mean is ", theoretical_mean)
+
+```
+
+These values are very close. This is expected, as 1000 is a fairly large number of simulations.  
+
+
+###Question 2
+Next we will show how variable the sample is and compare it to the theoretical variance of the distribution.  The theoretical variance is 1 over lambda squared over n, where n is 40 (defined above). 
+
+```{r}
+sample_var <- var(means_exponentials)
+theoretical_var <- (1 / lambda)^2 / (n)
+sample_sd <- sd(means_exponentials)
+theoretical_sd <- 1/(lambda * sqrt(n))
+paste0("The sample variance is ", sample_var, " and the theoretical variance is ", theoretical_var)
+paste0("The sample standard deviation is ",sample_sd, " and the theoretical standard deviation is ", theoretical_sd)
+```
+
+###Question 3
+Let's explore what this looks like with a plot.  We want to show the histogram of the means of our 40 exponentials, and then draw vertical lines for the sample mean and teoretical mean.  Finally, we will draw smooth lines that outline the histogram and see if those approximate the normal distribution shape.
+```{r}
+library("ggplot2")
+plotdata <- data.frame(means_exponentials)
+m <- ggplot(plotdata, aes(x =means_exponentials))
+m <- m + geom_histogram(aes(y=..density..), colour="grey",
+fill = "grey66")
+m <- m + labs(title = "Distribution of means of 40 Samples", x = "Mean of 40 Samples", y =
+"Density")
+m <- m + geom_vline(aes(xintercept = sample_mean, colour = "sample"))
+m <- m + geom_vline(aes(xintercept = theoretical_mean, colour = "theoretical"))
+m <- m + stat_function(fun = dnorm, args = list(mean = sample_mean, sd = sample_sd), color =
+"gold1", size = 1.0)
+m <- m + stat_function(fun = dnorm, args = list(mean = theoretical_mean, sd = theoretical_sd), colour =
+"red", size = 1.0)
+m
+```
+
+These distributions are approximately normal.  We see that there is a single hump, centered at the mean and not skewed to either side. The red and blue lines represent the sample and theoretical means, and they are very close.  The red line shows the curve created by the theoretical mean and standard deviation, and the gold line shows the curve created by the sample mean and standard deviation.  As with the means, they are very close, almost overlapping.
+
+We also see that the values tail off to either side, falling as they approach the extremity.  There is a longer tail on the right hand side of the graph that is not the same on the left side.  
+
+##Basic inferential data analysis
+For this analysis, we will use the tooth growth data set that is packaged with R.  There are 4 objectives:
+
+1. Load the ToothGrowth data and perform some basic exploratory data analyses
+
+2. Provide a basic summary of the data.
+
+3. Use confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose. (Only use the techniques from class, even if there are other approaches worth considering)
+
+4. State  conclusions and the assumptions needed for those conclusions
+
+###Question 1
+Load the ToothGrowth data and any needed libraries
+```{r}
+library(dplyr)
+library(datasets)
+library(ggplot2)
+data <- ToothGrowth
+```
+
+###Question 2
+Provide a basic summary of the data
+```{r}
+summary(data)
+head(data)
+```
+
+
+
+
+
+
+
