@@ -1,1 +1,1 @@
-# StatisticalInferenceCourseProject
+# Statistical_Inference_Course_Project

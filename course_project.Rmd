@@ -107,11 +107,61 @@ Provide a basic summary of the data
 ```{r}
 summary(data)
 head(data)
+dim(data)
+length(data)
+```
+We now want to do some basic computations to get a sense of the data
+
+```{r}
+grouped_data <- data %>%
+  group_by(supp, dose) %>%
+  summarize(avg_growth = mean(len),
+            sd_growth = sd(len))
+grouped_data
+```
+
+We can explore this further with a plot
+```{r}
+ggplot(data, aes(x=factor(dose), y=len, fill=factor(dose))) + 
+  geom_boxplot() + 
+  facet_grid(.~supp) + 
+  labs(title="Tooth Growth by supplement and dose", x="Dose", y="Tooth Length")
 ```
 
 
+###Use confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose
+
+From the plots above, it appears that OJ with doses .5 and 1 both promote more growth than VC at the same dosage.  We can run a t-test on each dose level to see if there is a significant difference.  The null hypothesis is that there is no difference in tooth growth at a given dose level between OJ and VC supplements.  We can see that the interquartile ranges appear to be different from the graph, so we will not assum that the variances are equal.  
+
+```{r}
+oj5 <- data %>% filter(supp=="OJ", dose=="0.5")
+oj1 <- data %>% filter(supp=="OJ", dose=="1")
+vc5 <- data %>% filter(supp=="VC", dose=="0.5")
+vc1 <- data %>% filter(supp=="VC", dose=="1")
+t.test(oj5$len, vc5$len, var.equal = FALSE)
+t.test(oj1$len, vc1$len, var.equal = FALSE)
+```
+
+The graph is less indicative about dose 2.  Those boxplots appear to be fairly close and the interquartile ranges overlap.  We will run a separate t test on dose 2 across the supplements.  Again, the null hypothesis is that there is no difference in length.
+
+```{r}
+oj2 <- data %>% filter(supp=="OJ", dose=="2")
+vc2 <- data %>% filter(supp=="VC", dose=="2")
+t.test(oj2$len, vc2$len, var.equal = FALSE)
+```
 
 
+###State  conclusions and the assumptions needed for those conclusions
 
+Now to interpret the hypothesis tests.  In both the .5 and the 1 dose test does the 95% confidence interval does not overlap 0.  That is, both the upper and lower values of the confidence interval are above 0.  Therefore, we reject the null hypothesis of no difference and find support for the alternative hypothesis that the difference in means is not 0.
 
+In the test where the dose is 2, the 95% confidence interval does overlap 0.  That is, the lower bound is less than 0, whereas the upper bound is greater than 0.  Therefore, we fail to reject the null hypothesis for the dose level of 2.  
+
+Based off of these test results, we can conclude that:
+* There is a significant difference in tooth growth when OJ is used vs VC for dose levels 0.5 and 1
+* There is no significant difference in tooth growth when OJ is used vs VC for dose levels of 2
+
+One assumption is that the sample size is adequate.  Since this comes from an experiment, we assume that the researchers had an adequate sample.  We have 60 total observations, but know nothing of the overall population of guinea pigs.  
+
+We also assume that the measurements are not paired and do not assume that the variances are equal.  We also assume that the samples are independent and that there was no crossover between the guinea pigs who received OJ and VC.  In other words, no subject received both OJ and VC.  
 
